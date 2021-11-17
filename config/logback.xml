@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSSZ,GMT+07}|%p|%m%n"/>
+    <property name="TIME" value="%d{yyyy-MM-dd-HH,GMT+07}"/>
+    <property name="APP_LOG_ROOT" value="./logs"/>
+    <property name="MAX_HISTORY" value="1000"/>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+    <appender name="springLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_ROOT}/springframework/springframework-${TIME}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </triggeringPolicy>
+        <!--<file>${APP_LOG_ROOT}/springframework/springframework.log</file>-->
+        <!--<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">-->
+            <!--<fileNamePattern>${APP_LOG_ROOT}/springframework/springframework-${DATE_TIME}-%i.log</fileNamePattern>-->
+            <!--<minIndex>1</minIndex>-->
+            <!--<maxIndex>10000</maxIndex>-->
+        <!--</rollingPolicy>-->
+        <!--<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">-->
+            <!--<maxFileSize>10KB</maxFileSize>-->
+        <!--</triggeringPolicy>-->
+    </appender>
+
+
+    <appender name="appLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_ROOT}/app/app-${TIME}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </triggeringPolicy>
+    </appender>
+
+
+    <appender name="errorLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_ROOT}/error/error-${TIME}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </triggeringPolicy>
+    </appender>
+
+    <appender name="kafkaLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_ROOT}/kafkaLog/kafkaLog-${TIME}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </triggeringPolicy>
+    </appender>
+
+    <appender name="userLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_ROOT}/userLog/userLog-${TIME}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </triggeringPolicy>
+    </appender>
+
+    <appender name="gameDesignLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_ROOT}/gameDesignLog/gameDesignLog-${TIME}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </triggeringPolicy>
+    </appender>
+
+    <appender name="systemLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${APP_LOG_ROOT}/systemLog/systemLog-${TIME}.log</fileNamePattern>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+        </triggeringPolicy>
+    </appender>
+
+    <!--<include resource="org/springframework/boot/logging/logback/defaults.xml"/>-->
+    <!--<include resource="org/springframework/boot/logging/logback/console-appender.xml"/>-->
+    <!--<include resource="org/springframework/boot/logging/logback/file-appender.xml"/>-->
+
+    <!--<root name="com.zingplay" level="ERROR">-->
+        <!--&lt;!&ndash;<appender-ref ref="console"/>&ndash;&gt;-->
+        <!--<appender-ref ref="errorLog"/>-->
+    <!--</root>-->
+
+    <logger name="org.springframework" level="INFO">
+        <appender-ref ref="springLog"/>
+        <appender-ref ref="console"/>
+    </logger>
+    <!--<logger name="com.zingplay" level="DEBUG">-->
+        <!--<appender-ref ref="appLog"/>-->
+        <!--<appender-ref ref="console"/>-->
+    <!--</logger>-->
+    <logger name="com.zingplay.log" level="ERROR">
+        <appender-ref ref="errorLog"/>
+    </logger>
+    <logger name="com.zingplay.log.LogGameDesignAction" level="DEBUG">
+        <appender-ref ref="gameDesignLog"/>
+    </logger>
+    <logger name="com.zingplay.log.LogErrorAction" level="DEBUG">
+        <appender-ref ref="errorLog"/>
+    </logger>
+    <logger name="com.zingplay.log.LogKafka" level="DEBUG">
+        <appender-ref ref="kafkaLog"/>
+    </logger>
+    <logger name="com.zingplay.log.LogSystemAction" level="DEBUG">
+        <appender-ref ref="systemLog"/>
+    </logger>
+    <logger name="com.zingplay.log.LogUserAction" level="DEBUG">
+        <appender-ref ref="userLog"/>
+    </logger>
+</configuration>

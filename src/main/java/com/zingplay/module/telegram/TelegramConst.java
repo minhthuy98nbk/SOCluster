@@ -1,0 +1,14 @@
+package com.zingplay.module.telegram;
+
+public enum TelegramConst {
+    INFO,
+    KAFKA_SENDING,
+    KAFKA_ADD_QUEUE,
+    BUY_OFFER_WRONG,
+    CHECK_HEALTH_CONTROL,
+    CHECK_NUM_LOG_SOCKET,
+    NO_OFFER_RUNNING,
+    GET_STATISTICAL_FAIL,
+    UPDATE_STATISTICAL_FAIL,
+    TRACKING_DATA_WRONG
+}
