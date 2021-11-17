@@ -7,6 +7,7 @@ import com.zingplay.module.objects.ConditionGame;
 import com.zingplay.module.objects.ConditionConfig;
 import com.zingplay.security.services.UserDetailsImpl;
 import com.zingplay.socket.v3.TrackingCommon;
+import com.zingplay.socket.v3.TypeParam;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,8 @@ public class Helpers {
             _checkInListStr(user, condition, isEnoughCondition);
             _checkRangeLong(user, condition, isEnoughCondition);
             _checkRangeFloat(user, condition, isEnoughCondition);
+            _checkRangeDuration(user, condition, isEnoughCondition);
+            _checkInListDuration(user, condition, isEnoughCondition);
         }else{
             isEnoughCondition.set(false);
         }
@@ -114,7 +117,7 @@ public class Helpers {
                 if(value.size() == 2){
                     Long min = value.get(0);
                     Long max = value.get(1);
-                    Long userValue = user.getTrackingLong(key);
+                    Long userValue = user.getTrackingLong(key, TypeParam.LONG);
                     if (min == null || max == null || userValue == null) {
                         isEnoughCondition.set(false);
                     } else if(isNotMiddle(min,userValue,max)){
@@ -196,7 +199,7 @@ public class Helpers {
         HashMap<String, List<Long>> inListLong = condition.getInListLong();
         if(inListLong != null){
             inListLong.forEach((key, value) -> {
-                Long userValue = user.getTrackingLong(key);
+                Long userValue = user.getTrackingLong(key, TypeParam.LONG);
                 if (userValue != null) {
                     if(!value.contains(userValue)){
                         isEnoughCondition.set(false);
@@ -217,7 +220,7 @@ public class Helpers {
                 if(value.size() == 2){
                     Long min = value.get(0);
                     Long max = value.get(1);
-                    Long userValue = user.getTrackingLong(key);
+                    Long userValue = user.getTrackingLong(key, TypeParam.DURATION);
                     long now = System.currentTimeMillis()/1000;
                     userValue = Long.parseLong(String.valueOf(Math.floor(userValue - now)/86400));
                     if (min == null || max == null || userValue == null) {
@@ -238,7 +241,7 @@ public class Helpers {
         HashMap<String, List<Long>> inListDuration = condition.getInListDuration();
         if(inListDuration != null){
             inListDuration.forEach((key, value) -> {
-                Long userValue = user.getTrackingLong(key);
+                Long userValue = user.getTrackingLong(key, TypeParam.DURATION);
                 long now = System.currentTimeMillis()/1000;
                 userValue = Long.parseLong(String.valueOf(Math.floor(userValue - now)/86400));
                 if (userValue != null) {
@@ -254,34 +257,58 @@ public class Helpers {
         }
     }
 
-    public void updateUserVer2ToVer3(User user, Object object, ConditionGame conditionGame) {
+    public void updateUserVer2ToVer3(User user) {
+        if (user.getTimeOnline() != null) {
+            convertTrackingLongIfAbsent(user, TrackingCommon.NumDayOffline, user.getTimeOnline().getTime());
+        }
+        if (user.getTotalGame() > 0) {
+            convertTrackingLongIfAbsent(user, TrackingCommon.TotalGame, user.getTotalGame());
+        }
+        if (user.getTotalPaid() > 0) {
+            convertTrackingFloatIfAbsent(user, TrackingCommon.TotalPaid, user.getTotalPaid());
+        }
+        if (user.getTotalTimesPaid() > 0) {
+            convertTrackingLongIfAbsent(user, TrackingCommon.TotalTimesPaid, user.getTotalTimesPaid());
+        }
+        if (user.getChannelGame() > 0) {
+            convertTrackingStringIfAbsent(user, TrackingCommon.ChannelIdx, String.valueOf(user.getChannelGame()));
+        }
+        // todo channel payment + last pay paid
+    }
 
+    public void convertTrackingStringIfAbsent (User user, TrackingCommon trackingCommon, String value) {
+        String tracking = user.getTrackingStr(trackingCommon.getText());
+        if(tracking == null){
+            user.setTracking(trackingCommon.getText(), value);
+        }
+    }
+
+    public void convertTrackingLongIfAbsent (User user, TrackingCommon trackingCommon, int value) {
+        convertTrackingLongIfAbsent(user, trackingCommon, (long) value);
+    }
+
+    public void convertTrackingLongIfAbsent (User user, TrackingCommon trackingCommon, Long value) {
+        Long tracking = user.getTrackingLong(trackingCommon.getText(), trackingCommon.getTypeParam());
+        if(tracking == null){
+            user.setTracking(trackingCommon.getText(), value, trackingCommon.getTypeParam(), trackingCommon.getTypeUpdateParam());
+        }
+    }
+    public void convertTrackingFloatIfAbsent (User user, TrackingCommon trackingCommon, Float value) {
+        Float tracking = user.getTrackingFloat(trackingCommon.getText());
+        if(tracking == null){
+            user.setTracking(trackingCommon.getText(), value, trackingCommon.getTypeUpdateParam());
+        }
     }
 
     public boolean isEnoughCondition(User user, Object object, ConditionGame conditionGame){
-        //auto convert condition to list
-        Long trackingLong;
-        if (user.getTimeOnline() != null) {
-            trackingLong = user.getTrackingLong(TrackingCommon.TimeOnline);
-            if(trackingLong == null){
-                user.setTracking(TrackingCommon.TimeOnline, user.getTimeOnline().getTime(), ConditionConfig.DURATION);
-            }
-        }
-        if (user.getChannelGame() != null) {
-            trackingLong = user.getTrackingLong(TrackingCommon.ChannelIdx);
-            if(trackingLong == null){
-                user.setTracking(TrackingCommon.ChannelIdx, user.getChannelGame());
-            }
-        }
-        trackingLong = user.getTrackingLong(TrackingCommon.TotalGame);
-        if(trackingLong == null){
-            user.setTracking(TrackingCommon.TotalGame, user.getTotalGame(), ConditionConfig.LONG);
-        }
-
+        updateUserVer2ToVer3(user);
+        // todo
         ConditionObject condition = object.getCondition();
         if(condition != null){
             return isEnoughCondition(user,condition,conditionGame);
         }
+
+
         //LogLogic.getInstance().error("checkCondition|{}|{}", user.toString(), object.toString());
         //object.getChannelPayments();
         //object.getLastPaidAmounts();

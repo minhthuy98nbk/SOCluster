@@ -2,7 +2,6 @@ package com.zingplay.service.user;
 
 import com.zingplay.beans.UserTracking;
 import com.zingplay.helpers.Helpers;
-import com.zingplay.helpers.TrackingHelpers;
 import com.zingplay.log.*;
 import com.zingplay.models.Object;
 import com.zingplay.models.*;
@@ -16,6 +15,8 @@ import com.zingplay.repository.*;
 import com.zingplay.socket.SocketConst;
 import com.zingplay.socket.v1.request.*;
 import com.zingplay.socket.v3.TrackingCommon;
+import com.zingplay.socket.v3.TypeParam;
+import com.zingplay.socket.v3.TypeUpdateParam;
 import com.zingplay.socket.v3.request.UserReceiveDataCustom;
 import com.zingplay.socket.v3.response.DataCustom;
 import com.zingplay.socket.v1.response.Offer;
@@ -114,39 +115,6 @@ public class UserService {
         trackingService.incrementTracking(game, country, tracking.getTimeCurrentLong(), SocketConst.ACTION_LOGIN);
     }
 
-    public void logTrackingRegister(UserTrackingLogin tracking, String game, String country){
-        if(tracking == null) {
-            LogKafka.getInstance().error("logTrackingLogin tracking null",game,country);
-            return;
-        }
-        Integer userId = Integer.parseInt(tracking.getUserId());
-        // User user = userRepository.findFirstByUserIdAndGameAndCountry(userId,game,country).orElse(null);
-        User user = userRepository.findFirstByUserId(userId).orElse(null);
-        if(user == null){
-            LogKafka.getInstance().info("logTrackingLogin user not found, create new|{}|{}|{}",game,country, userId);
-            user = new User();
-            user.setTimeCreate(new Date(tracking.getTimeCreate()));
-            user.setGame(game);
-            user.setCountry(country);
-            user.setUserId(userId);
-        }
-        user.setGame(game);
-        user.setCountry(country);
-        user.setChannelGame(tracking.getChannelIdx());
-        user.setTotalGame(tracking.getTotalGame());
-        user.setTimeOnline(new Date(tracking.getTimeCurrent()));
-        user.setTimeCreate(new Date(tracking.getTimeCreate()));
-
-        userRepository.save(user);
-        String databaseNameForCurrentThread = MultiTenantMongoDbFactory.getDatabaseNameForCurrentThread();
-        String check = game + "_" + country;
-        if(!databaseNameForCurrentThread.endsWith(check)){
-            LogSystemAction.getInstance().error("Failed multi db |" + databaseNameForCurrentThread +"|" + check);
-        }
-        LogKafka.getInstance().info("logTrackingLogin updated|{}|{}|{}|{}|{}|{}",game,country, userId, tracking.getTotalGame(), tracking.getChannelIdx(), tracking.getTimeCurrent());
-        trackingService.incrementTracking(game, country,tracking.getTimeCurrent(), SocketConst.ACTION_LOGIN);
-    }
-
     public void logTrackingLogin(UserTrackingLogin tracking, String game, String country){
         if(tracking == null) {
             LogKafka.getInstance().error("logTrackingLogin tracking null",game,country);
@@ -225,9 +193,12 @@ public class UserService {
         user.setLastPaidPack(lastPaidPack);
         user.addChannelPayment(tracking.getChannelPayment());
         user.setTimeOnline(new Date(tracking.getTimeCurrent()));
-        user.setTracking(TrackingCommon.TotalPaid,totalPaid);
-        user.setTracking(TrackingCommon.TotalTimesPaid,totalTimesPaid);
-        user.setTracking(TrackingCommon.LastPaidPack,tracking.getPackCost());
+
+        // ver 3
+        TrackingCommon.setConstantTracking(user, TrackingCommon.TotalPaid, tracking.getPackCost());
+        TrackingCommon.setConstantTracking(user, TrackingCommon.TotalTimesPaid, 1);
+        // todo hashCode
+        TrackingCommon.setConstantTrackingObject(user, TrackingCommon.LastPaidPack, "USD", String.valueOf(tracking.getPackCost()));
         userRepository.save(user);
         trackingService.incrementTracking(game, country, tracking.getTimeCurrent(), SocketConst.ACTION_USER_PAYMENT);
     }
@@ -905,5 +876,8 @@ public class UserService {
     public void logTrackingUserReceiveOfferV2(String game, String country, com.zingplay.socket.v2.response.UserOffers userOffer) {
         reportOfferService.logTrackingUserReceiveOfferV2(game,country,userOffer);
     }
+
+    // ver 3
+
 
 }

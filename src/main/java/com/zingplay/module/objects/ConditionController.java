@@ -4,6 +4,9 @@ import com.zingplay.models.Condition;
 import com.zingplay.models.ConditionObject;
 import com.zingplay.models.User;
 import com.zingplay.models.ValueCondition;
+import com.zingplay.socket.v3.TrackingCommon;
+import com.zingplay.socket.v3.TypeParam;
+import com.zingplay.socket.v3.TypeUpdateParam;
 import com.zingplay.socket.v3.UserTrackingCustom;
 
 import java.util.HashMap;
@@ -76,16 +79,16 @@ public class ConditionController {
                 trackingStr.forEach(user::setTracking);
             }
             if(trackingLong != null){
-                trackingLong.forEach((key, value) -> user.setTracking(key, value, ConditionConfig.LONG));
+                trackingLong.forEach((key, value) -> user.setTracking(key, value, TypeParam.LONG, TypeUpdateParam.SET));
             }
             if(trackingFloat != null){
-                trackingFloat.forEach(user::setTracking);
+                trackingFloat.forEach((key, value) -> user.setTracking(key, value, TypeUpdateParam.SET));
             }
             if(trackingObject != null){
                 trackingObject.forEach(user::setTracking);
             }
             if(trackingDuration != null){
-                trackingDuration.forEach((key, value) -> user.setTracking(key, value, ConditionConfig.DURATION));
+                trackingDuration.forEach((key, value) -> user.setTracking(key, value, TypeParam.DURATION, TypeUpdateParam.SET));
             }
         }
     }

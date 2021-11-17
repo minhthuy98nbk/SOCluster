@@ -11,7 +11,7 @@ import java.util.*;
 public class TrackingHelpers {
     public static long getTimeCurrent(UserTrackingCustom tracking) {
         if(tracking != null){
-            return tracking.getTrackingLong(TrackingCommon.TimeCurrent);
+            return tracking.getTimeCurrent();
         }
         return 0;
     }
@@ -59,18 +59,18 @@ public class TrackingHelpers {
                         }
                         temp.getMapStrParams().put(subCondition.getKey(), sample.get(i));
                         break;
-                    case ConditionConfig.FLOAT:
-                        if (temp.getMapFloatParams() == null) {
-                            temp.setMapFloatParams(new HashMap<>());
-                        }
-                        temp.getMapFloatParams().put(subCondition.getKey(), Float.parseFloat(sample.get(i)));
-                        break;
-                    case ConditionConfig.LONG:
-                        if (temp.getMapLongParams() == null) {
-                            temp.setMapLongParams(new HashMap<>());
-                        }
-                        temp.getMapLongParams().put(subCondition.getKey(), Long.parseLong(sample.get(i)));
-                        break;
+//                    case ConditionConfig.FLOAT:
+//                        if (temp.getMapFloatParams() == null) {
+//                            temp.setMapFloatParams(new HashMap<>());
+//                        }
+//                        temp.getMapFloatParams().put(subCondition.getKey(), Float.parseFloat(sample.get(i)));
+//                        break;
+//                    case ConditionConfig.LONG:
+//                        if (temp.getMapLongParams() == null) {
+//                            temp.setMapLongParams(new HashMap<>());
+//                        }
+//                        temp.getMapLongParams().put(subCondition.getKey(), Long.parseLong(sample.get(i)));
+//                        break;
                 }
             }
             result.add(temp);

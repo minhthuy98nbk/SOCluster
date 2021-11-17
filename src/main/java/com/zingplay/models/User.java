@@ -1,6 +1,7 @@
 package com.zingplay.models;
 
-import com.zingplay.module.objects.ConditionConfig;
+import com.zingplay.socket.v3.TypeParam;
+import com.zingplay.socket.v3.TypeUpdateParam;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -15,15 +16,15 @@ public class User {
     private int userId;
     private Date timeCreate;
 
+    // check remove user
+    private Date timeOnline;
+
+    // biến trong map để quét object
     HashMap<String, ValueCondition> trackingObject;
     private HashMap<String,String> trackingStr;
     private HashMap<String,Long> trackingLong;
     private HashMap<String,Float> trackingFloat;
     private HashMap<String,Long> trackingDuration;
-
-    // cai nay giu lai de remove user. lay time doc log tracking
-    private Date timeOnline;
-
 
     //tuong lai xoa het ben dưới
     private int channelGame;
@@ -54,9 +55,18 @@ public class User {
         }
         return null;
     }
-    public Long getTrackingLong(String key) {
-        if(trackingLong != null){
-            return trackingLong.get(key);
+    public Long getTrackingLong(String key, TypeParam typeLongParam) {
+        switch (typeLongParam) {
+            case LONG:
+                if(trackingLong != null){
+                    return trackingLong.get(key);
+                }
+                return null;
+            case DURATION:
+                if(trackingDuration != null){
+                    return trackingDuration.get(key);
+                }
+                return null;
         }
         return null;
     }
@@ -66,30 +76,48 @@ public class User {
         }
         return null;
     }
+
+    // object
     public void setTracking(String key, ValueCondition value){
         if(trackingObject == null) trackingObject = new HashMap<>();
         trackingObject.put(key,value);
     }
+    // string
     public void setTracking(String key,String value){
         if(trackingStr == null) trackingStr = new HashMap<>();
         trackingStr.put(key,value);
     }
-    public void setTracking(String key, Long value, String conditionType){
-        if (conditionType.equals(ConditionConfig.LONG)) {
-            if(trackingLong == null) trackingLong = new HashMap<>();
-            trackingLong.put(key,value);
-        } else  {
-            if(trackingDuration == null) trackingDuration = new HashMap<>();
-            trackingDuration.put(key,value);
+    // long
+    public void setTracking(String key, Long value, TypeParam typeLongParam, TypeUpdateParam typeUpdateParam){
+        switch (typeLongParam) {
+            case LONG:
+                setTracking(key, value, typeUpdateParam, trackingLong);
+                break;
+            case DURATION:
+                setTracking(key, value, typeUpdateParam, trackingDuration);
+                break;
         }
     }
-    public void setTracking(String key, Integer value, String conditionType){
-        setTracking(key, Long.parseLong(String.valueOf(value)), conditionType);
+    public void setTracking(String key, Long value, TypeUpdateParam typeUpdateParam, Map<String, Long> map){
+        if(map == null) map = new HashMap<>();
+        switch (typeUpdateParam) {
+            case SET:
+                map.put(key, value);
+                return;
+            case SUM:
+                map.put(key, map.get(key) + value);
+        }
     }
-
-    public void setTracking(String key,Float value){
+    // float
+    public void setTracking(String key,Float value, TypeUpdateParam typeUpdateParam){
         if(trackingFloat == null) trackingFloat = new HashMap<>();
-        trackingFloat.put(key,value);
+        switch (typeUpdateParam) {
+            case SET:
+                trackingFloat.put(key, value);
+                return;
+            case SUM:
+                trackingFloat.put(key, trackingFloat.get(key) + value);
+        }
     }
 
     public void setTrackingStr(HashMap<String, String> trackingStr) {
